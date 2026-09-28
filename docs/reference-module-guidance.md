@@ -9,7 +9,7 @@ Este documento explica como o módulo de referência pedagógica `tasks` está e
 O módulo `tasks` implementa um ciclo CRUD completo ponta a ponta com padrões de produção:
 
 1. **Persistência (Prisma ORM & PostgreSQL):**
-   - Entidade `Task` com chaves estrangeiras, índices e tipos enumerados (`TaskStatus`, `TaskPriority`).
+   - Entidade `Task` com chaves estrangeiras, índices e tipos enumerados (`TaskStatus`, `TaskPriority`, `TaskCategory`).
    - Suporte a **Remoção Lógica (*Soft Delete*)** através do campo `deletedAt`.
    - Relação de propriedade com o perfil do usuário (`UserProfile`).
 
@@ -59,7 +59,7 @@ Se você preferir iniciar sua aplicação a partir de uma base totalmente limpa:
 1. **Remover no Backend:**
    - Exclua o diretório `apps/api/src/tasks/`.
    - Em `apps/api/src/app.module.ts`, remova a importação e o módulo `TasksModule` do array `imports`.
-   - No `apps/api/prisma/schema.prisma`, remova o `model Task`, os enums `TaskStatus`/`TaskPriority` e o campo `tasks Task[]` em `UserProfile`.
+   - No `apps/api/prisma/schema.prisma`, remova o `model Task`, os enums `TaskStatus`/`TaskPriority`/`TaskCategory` e o campo `tasks Task[]` em `UserProfile`.
    - Crie uma migration de exclusão ou reset com `pnpm db:migrate`.
 
 2. **Remover no Frontend:**

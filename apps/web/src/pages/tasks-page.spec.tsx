@@ -22,6 +22,7 @@ vi.mock('../lib/api-client', () => ({
           description: 'Definir pipeline no GitHub Actions',
           status: 'PENDING',
           priority: 'HIGH',
+          category: 'STUDY',
           dueDate: '2026-12-31T00:00:00.000Z',
           ownerId: 'usr-1',
           createdAt: '2026-08-31T10:00:00.000Z',
@@ -63,6 +64,8 @@ describe('TasksPage', () => {
     expect(await screen.findByText('Configurar CI/CD')).toBeInTheDocument();
     expect(screen.getByText('Definir pipeline no GitHub Actions')).toBeInTheDocument();
     expect(screen.getAllByText('Alta').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId('task-category')).toHaveTextContent('Estudos');
+    expect(screen.getByLabelText('Filtrar por categoria')).toBeInTheDocument();
     expect(screen.getAllByText('Pendente').length).toBeGreaterThanOrEqual(1);
   });
 });

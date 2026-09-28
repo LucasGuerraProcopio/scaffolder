@@ -1,7 +1,7 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PrismaService } from '../prisma/prisma.service';
-import { TaskPriorityEnum, TaskStatusEnum } from './task.dto';
+import { TaskCategoryEnum, TaskPriorityEnum, TaskStatusEnum } from './task.dto';
 import { TasksService } from './tasks.service';
 
 describe('TasksService', () => {
@@ -29,6 +29,7 @@ describe('TasksService', () => {
     description: 'Aprender sobre sessões opacas e Keycloak',
     status: TaskStatusEnum.PENDING,
     priority: TaskPriorityEnum.HIGH,
+    category: TaskCategoryEnum.STUDY,
     dueDate: new Date(Date.now() + 86400000),
     ownerId: 'user-uuid-1',
     deletedAt: null,
@@ -70,6 +71,35 @@ describe('TasksService', () => {
       expect(prisma.task.create).toHaveBeenCalled();
     });
 
+    it('defaults category to GENERAL when not provided', async () => {
+      prisma.task.create.mockResolvedValue({ ...mockTask, category: TaskCategoryEnum.GENERAL });
+
+      const result = await service.create(mockUser.id, { title: 'Tarefa sem categoria' });
+
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ category: TaskCategoryEnum.GENERAL }),
+        }),
+      );
+      expect(result.category).toBe(TaskCategoryEnum.GENERAL);
+    });
+
+    it('persists the provided category', async () => {
+      prisma.task.create.mockResolvedValue({ ...mockTask, category: TaskCategoryEnum.WORK });
+
+      const result = await service.create(mockUser.id, {
+        title: 'Reunião de planejamento',
+        category: TaskCategoryEnum.WORK,
+      });
+
+      expect(prisma.task.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ category: TaskCategoryEnum.WORK }),
+        }),
+      );
+      expect(result.category).toBe(TaskCategoryEnum.WORK);
+    });
+
     it('rejects due date set in the past', async () => {
       const pastDate = new Date(Date.now() - 3600000).toISOString();
 
@@ -96,6 +126,19 @@ describe('TasksService', () => {
             deletedAt: null,
             ownerId: mockUser.id,
           }),
+        }),
+      );
+    });
+
+    it('filters tasks by category', async () => {
+      prisma.task.count.mockResolvedValue(1);
+      prisma.task.findMany.mockResolvedValue([mockTask]);
+
+      await service.findAll(mockUser, { page: 1, pageSize: 10, category: TaskCategoryEnum.STUDY });
+
+      expect(prisma.task.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({ category: TaskCategoryEnum.STUDY }),
         }),
       );
     });
@@ -163,6 +206,22 @@ describe('TasksService', () => {
       });
 
       expect(result.title).toBe('Título Atualizado');
+    });
+
+    it('updates task category', async () => {
+      prisma.task.findFirst.mockResolvedValue(mockTask);
+      prisma.task.update.mockResolvedValue({ ...mockTask, category: TaskCategoryEnum.HEALTH });
+
+      const result = await service.update(mockUser, mockTask.id, {
+        category: TaskCategoryEnum.HEALTH,
+      });
+
+      expect(prisma.task.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({ category: TaskCategoryEnum.HEALTH }),
+        }),
+      );
+      expect(result.category).toBe(TaskCategoryEnum.HEALTH);
     });
 
     it('rejects editing field details of a COMPLETED task without reopening it first', async () => {

@@ -90,6 +90,7 @@ erDiagram
         string description
         enum status "PENDING | IN_PROGRESS | COMPLETED | CANCELLED"
         enum priority "LOW | MEDIUM | HIGH | URGENT"
+        enum category "GENERAL | WORK | STUDY | PERSONAL | HEALTH | FINANCE"
         datetime dueDate
         uuid ownerId FK
         datetime deletedAt
